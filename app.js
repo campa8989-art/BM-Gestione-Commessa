@@ -2,15 +2,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- 0. Ambiente & Sincronizzazione Dati ---
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
     
     // Scegliamo il dataset in base all'ambiente (iniettato da PS)
-    // Fallback in caso di variabili non ancora iniettate
     window.workspaceData = isLocal ? 
         (typeof workspaceDataLocal !== 'undefined' ? workspaceDataLocal : (typeof workspaceData !== 'undefined' ? workspaceData : [])) : 
         (typeof workspaceDataRemote !== 'undefined' ? workspaceDataRemote : (typeof workspaceData !== 'undefined' ? workspaceData : []));
-
-    console.log(`Ambiente rilevato: ${isLocal ? 'LOCALE (Full)' : 'REMOTA (GitHub Sync)'}`);
+    
+    console.log(`Ambiente rilevato: ${isLocal ? 'LOCALE/OneDrive' : 'REMOTA (GitHub Sync)'}`);
+    console.log(`Workspace Data items: ${window.workspaceData ? window.workspaceData.length : 0}`);
     
     // --- 0.1 Offline & Data Persistence ---
     let connectionStatus = document.getElementById('connection-status');
@@ -128,7 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 2. Popolamento Siti e Statistiche Globali (Dinamico)
-    maintenanceData.forEach(row => {
+    const activeData = (typeof maintenanceData !== 'undefined') ? maintenanceData : (window.maintenanceData || []);
+    
+    activeData.forEach(row => {
         if (!sites[row.ID_Sito]) {
             sites[row.ID_Sito] = {
                 id: row.ID_Sito,
@@ -317,9 +319,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderCurrentSite() {
         if (!currentSiteId) return;
         const site = sites[currentSiteId];
-        
         // Update header immediately so it doesn't flicker
-        currentSiteNameEl.innerText = `${site.id} - ${site.nome}`;
+        const siteIdDisplay = site ? site.id : (currentSiteId || '---');
+        const siteNameDisplay = site ? site.nome : 'Siti non trovati in data.js';
+        currentSiteNameEl.innerText = `${siteIdDisplay} - ${siteNameDisplay}`;
+
+        if (!site) {
+            console.error(`Sito con ID ${currentSiteId} non trovato in data.js`);
+            if (activityGridEl) activityGridEl.innerHTML = `<div class='error-msg'>Dati per il sito ${currentSiteId} mancanti. Riesegui SINC_TOTALE.ps1</div>`;
+            return;
+        }
         
         // Subview rendering with small transition
         if (currentView === 'calendar') {
@@ -842,7 +851,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!container) return;
             container.innerHTML = data.map(item => `
                 <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s; cursor: pointer;" 
-                    onclick="switchView('dashboard'); currentSiteId='${item.id}'; renderCurrentSite();">
+                    onclick="window.appSelectSite('${item.id}')">
                     <td style="padding: 12px 8px;">
                         <div style="font-weight: 600; font-size: 13px;">${item.nome}</div>
                         <div style="font-size: 10px; color: var(--text-muted);">ID: ${item.id}</div>
@@ -1407,6 +1416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentDrawerTask = null;
 
     function openTaskDrawer(task) {
+        if (!task) return;
         currentDrawerTask = task;
         
         // Populate Data
@@ -1446,9 +1456,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('drawer-related-docs');
         if (!container) return;
 
-        container.innerHTML = '';
         const system = task.Sistema;
-        const query = (SYSTEM_KEYWORDS[system] || system).toLowerCase();
+        const keywords = SYSTEM_KEYWORDS[system] || [system];
+        const query = Array.isArray(keywords) ? keywords[0].toLowerCase() : keywords.toLowerCase();
         const siteId = task.ID_Sito;
 
         // Recursive search for files matching the system and site
@@ -1502,7 +1512,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function viewDoc(task) {
         if (!task) return;
         const system = task.Sistema;
-        const sysKeywords = SYSTEM_KEYWORDS[system] || [system.toLowerCase()];
+        const keywords = SYSTEM_KEYWORDS[system] || [system];
+        const sysKeywords = Array.isArray(keywords) ? keywords : [keywords];
         const siteName = task.Nome_Sito || "";
         
         // Parole chiave del sito per raffinare la ricerca
@@ -1810,7 +1821,13 @@ document.addEventListener('DOMContentLoaded', () => {
     switchSubview(currentSubview);
     renderWorkspace();
 
-    // --- 7. Final Export Listeners (Punto 3 Roadmap) ---
+    // Export functions to global window to avoid scope issues in local protocol
+    window.openTaskDrawer = openTaskDrawer;
+    window.viewDoc = viewDoc;
+    window.switchView = switchView;
+    window.renderCurrentSite = renderCurrentSite;
+    // window.appSelectSite is already on window from its declaration
+    
     const btnExcel = document.getElementById('btn-export-excel');
     const btnPdf = document.getElementById('btn-export-pdf');
     
