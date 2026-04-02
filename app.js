@@ -83,7 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'Idrico': ['idrici', 'idrico', 'acqua', 'addolcitori', 'autoclave', 'legionella'],
         'Antincendio': ['antincendio', 'estintori', 'idranti', 'sprinkler', 'rilevazione'],
         'Legionella': ['legionella', 'biossido'],
-        'Elevatori': ['ascensori', 'elevatori', 'montacarichi']
+        'Elevatori': ['ascensori', 'elevatori', 'montacarichi'],
+        'Edile': ['edile', 'infissi', 'porte', 'opere']
     };
 
     function indexServiziFiles(items) {
