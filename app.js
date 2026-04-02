@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="card-footer">
-                    <button class="btn-glass details-btn">Dettagli Tecnini</button>
+                    <button class="btn-glass details-btn">Dettagli Tecnici</button>
                     <button class="btn-glass doc-btn" ${!hasDoc ? 'disabled style="opacity: 0.3; cursor: not-allowed;"' : ''}>Documenti</button>
                 </div>
             `;
@@ -399,6 +399,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.stopPropagation();
                 openTaskDrawer(task);
             };
+
+            const detailsBtn = card.querySelector('.details-btn');
+            if (detailsBtn) {
+                detailsBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    openTaskDrawer(task);
+                };
+            }
 
             const docBtn = card.querySelector('.doc-btn');
             if (docBtn && hasDoc) {
@@ -1488,6 +1496,60 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 container.appendChild(item);
             });
+        }
+    }
+
+    function viewDoc(task) {
+        if (!task) return;
+        const system = task.Sistema;
+        const sysKeywords = SYSTEM_KEYWORDS[system] || [system.toLowerCase()];
+        const siteName = task.Nome_Sito || "";
+        
+        // Parole chiave del sito per raffinare la ricerca
+        const siteKeywords = siteName
+            .replace(/Via|V\.le|Piazza|Viale|viale|[0-9/]+/gi, '')
+            .trim()
+            .toLowerCase()
+            .split(/\s+/)
+            .filter(w => w.length >= 3);
+
+        let foundDoc = null;
+
+        function searchRecursive(items) {
+            if (foundDoc) return;
+            const list = Array.isArray(items) ? items : [items];
+            
+            for (const item of list) {
+                if (item.isDir && item.children) {
+                    searchRecursive(item.children);
+                } else if (!item.isDir) {
+                    const pathLower = item.path.toLowerCase();
+                    // Deve contenere il sistema e possibilmente il sito
+                    const matchesSystem = sysKeywords.some(kw => pathLower.includes(kw.toLowerCase()));
+                    const matchesSite = siteKeywords.some(kw => pathLower.includes(kw));
+                    
+                    if (matchesSystem && matchesSite) {
+                        foundDoc = item;
+                        return;
+                    }
+                }
+            }
+        }
+
+        searchRecursive(workspaceData);
+
+        if (foundDoc) {
+            const internal = foundDoc.path.replace(/\\/g, '/');
+            const finalPath = window.location.protocol === 'file:' ? `../../../${internal}` : internal;
+            window.open(finalPath, '_blank');
+        } else {
+            // Fallback: Apri l'archivio con la ricerca preimpostata
+            switchView('workspace');
+            workspaceSearchQuery = siteKeywords[0] || system;
+            const searchInput = document.getElementById('workspace-search');
+            if (searchInput) searchInput.value = workspaceSearchQuery;
+            renderWorkspace();
+            alert("Documento specifico non trovato. Reindirizzamento all'Archivio per ricerca manuale.");
         }
     }
 
