@@ -4702,19 +4702,5 @@
         "Last_Date":  "DA VERIFICARE",
         "Next_Date":  "2026-06-15",
         "Urgency":  "Normal"
-    },
-    {
-        "ID_Sito":  "34",
-        "Nome_Sito":  "Magazzino/Uffici",
-        "Indirizzo":  "TBD",
-        "Sistema":  "Audit",
-        "Attivita":  "Censimento asset in corso...",
-        "Frequenza":  "---",
-        "Normativa":  "---",
-        "Stato_Documentale":  "DA VERIFICARE",
-        "Note":  "Sito aggiunto da Master List (Nessun match)",
-        "Last_Date":  "",
-        "Next_Date":  "2026-06-15",
-        "Urgency":  "Normal"
     }
 ];
