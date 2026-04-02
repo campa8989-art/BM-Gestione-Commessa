@@ -73,15 +73,7 @@ try {
     }
 
 } catch {
-    Write-Host ""
-    Write-Host "❌ ERRORE CRITICO DURANTE IL MONITORAGGIO: $_" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Suggerimenti:"
-    Write-Host "1. Verifica di avere i permessi per questa cartella."
-    Write-Host "2. Prova a eseguire come amministratore se il problema persiste."
-    Write-Host ""
-    Write-Host "Premi un tasto per chiudere..." -ForegroundColor Gray
-    Read-Host
+    Write-Host "Auto-Restart in corso tramite il terminale..." -ForegroundColor Gray
 } finally {
     if ($watcher) {
         $watcher.EnableRaisingEvents = $false
