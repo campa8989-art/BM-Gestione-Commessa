@@ -458,8 +458,8 @@ body.light-theme .header-info h1 {
 }
 
 .toggle-btn:hover:not(.active) {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+    background: var(--accent);
 }
 
 .filter-group {
@@ -482,14 +482,16 @@ body.light-theme .header-info h1 {
 }
 
 .filter-btn:hover {
-    border-color: var(--text-muted);
-    color: #fff;
+    border-color: var(--text-main);
+    color: var(--text-main);
+    background: var(--accent);
 }
 
 .filter-btn.active {
-    background: #fff;
-    color: var(--bg-main);
-    border-color: #fff;
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
 }
 
 /* Export Buttons */

@@ -13,11 +13,11 @@ Project for the standardization and proactive management of maintenance for **33
   - `aggiorna_dati_archivio.ps1`: Dual-scan (Local vs Remote) per navigazione intelligente.
   - `aggiorna_dashboard_online.ps1`: Gestione sincronizzazione cartelle e privacy.
 
-## 🚀 Status as of 01 April 2026 (Mid-Day Update)
-- **Standardizzazione ARIA 2024**: Allineamento totale degli ID Presidio con la tabella ufficiale Gara ARIA 2024 (ID da 01 a 34).
-- **Anagrafica Verificata**: Risoluzione bug "TBD" — Tutti i 33 indirizzi sono ora mappati correttamente tramite `Master_Facility_List_Validated.csv`.
-- **Analytics 2.0 (Fleet Control)**: Implementazione classifiche **Top/Bottom 5** per performance di conformità documentale e **Report Globale PDF** per l'intera flotta.
-- **Architettura Split-Data**: Ottimizzazione dati — `index.html` gestisce `workspace_data.js` via iniezione PS per sincronizzazione OneDrive.
+## 🚀 Status as of 02 April 2026 (UI & Data Stability Update)
+- **Standardizzazione ARIA 2024**: Allineamento totale degli ID Presidio con la tabella ufficiale Gara ARIA 2024 (ID da 01 a 33).
+- **Core Engine Hardening**: Implementati controlli di sicurezza (null-checking) su variabili e layout per prevenire "White Screen of Death" durante il rendering iniziale. 
+- **Gestione Datasets Modulari**: Ripristino e consolidamento dei collegamenti a `data.js` e script esterni, con salvataggio sicuro in ambiente locale e remoto (`window.workspaceData`).
+- **Architettura Strutturata**: Chiusura bug di visualizzazione causati da tag HTML spaiati, garantendo l'integrità del design Emerald Glassmorphism.
 - **Supporto Offline**: Caching automatico dei dati in `localStorage` con indicatori di stato real-time.
 - **Verifica Documentale Dinamica**: Scansione real-time della cartella `05-servizi` per validazione "REALE" degli interventi tramite match parole chiave Sito/Sistema.
 
@@ -35,6 +35,4 @@ Project for the standardization and proactive management of maintenance for **33
 - [ ] **Trend Storico**: Visualizzazione della progressione conformità mese dopo mese (Richiede archivio storico dati).
 
 ---
-*Ultimo aggiornamento: 01/04/2026 — Antigravity / Ivan Campagnoli — ARIA 2024 ID Standardization & Analytics 2.0*
-
-
+*Ultimo aggiornamento: 02/04/2026 — Antigravity / Ivan Campagnoli — UI Stabilization & Core Data Routing*
