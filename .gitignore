@@ -1,0 +1,21 @@
+01-Operation/06 - Contabilità/
+01-Operation/08 - Contratto Iniziale/
+01-Operation/tmp/
+01-Operation/02_Scripts_System/
+
+# File di sistema e temporanei
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.log
+*.tmp
+node_modules/
+dist/
+.vscode/
+.idea/
+.git/
+**/[Gg]it/

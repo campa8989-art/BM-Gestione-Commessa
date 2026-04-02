@@ -1,0 +1,87 @@
+# BUILDING MANAGER PREMIUM - MONITORAGGIO REAL-TIME
+# Questo script monitora la tua cartella OneDrive e aggiorna automaticamente la Dashboard.
+# Lascia questa finestra aperta (o ridotta a icona) mentre lavori.
+
+# Imposta preferenza errori come "Stop" per il catch block durante l'inizializzazione
+$ErrorActionPreference = "Stop"
+
+try {
+    # 1. Configurazione Percorsi
+    # Usiamo un metodo robusto per trovare la root del progetto
+    $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    if ([string]::IsNullOrEmpty($ScriptDir)) { $ScriptDir = $PSScriptRoot }
+    
+    $RootPath = Get-Item (Join-Path $ScriptDir "..\..\..")
+    $SyncScript = Join-Path $ScriptDir "aggiorna_dati_archivio.ps1"
+    
+    # Verifica esistenza file critici
+    if (-not (Test-Path $SyncScript)) { throw "Impossibile trovare lo script di sincronizzazione: $SyncScript" }
+
+    Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
+    Write-Host "   🚀 BUILD MANAGER: MONITORAGGIO ATTIVO (REAL-TIME)" -ForegroundColor Cyan
+    Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
+    Write-Host "Percorso monitorato: $($RootPath.FullName)"
+    Write-Host ""
+    Write-Host "Ogni modifica verrà sincronizzata automaticamente."
+    Write-Host "Premi CTRL+C per fermare il monitoraggio."
+    Write-Host "--------------------------------------------------------"
+    Write-Host ""
+
+    # Configurazione FileSystemWatcher
+    $watcher = New-Object System.IO.FileSystemWatcher
+    $watcher.Path = $RootPath.FullName
+    $watcher.IncludeSubdirectories = $true
+    $watcher.EnableRaisingEvents = $true
+
+    # Filtro Broad (Tutto) e NotifyFilter per Cartelle
+    $watcher.Filter = "*"
+    $watcher.NotifyFilter = [System.IO.NotifyFilters]::DirectoryName -bor [System.IO.NotifyFilters]::FileName -bor [System.IO.NotifyFilters]::LastWrite -bor [System.IO.NotifyFilters]::Attributes
+
+    # Logica di Debounce
+    $Global:lastRun = [DateTime]::MinValue
+
+    $action = {
+        $now = Get-Date
+        if ($now -gt $Global:lastRun.AddSeconds(3)) {
+            $scriptToRun = $Event.MessageData
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] 🔄 Cambiamento rilevato! Aggiornamento in corso..." -ForegroundColor Yellow
+            
+            # Eseguiamo il sync script principale
+            powershell.exe -ExecutionPolicy Bypass -NoProfile -File "$scriptToRun"
+            
+            $Global:lastRun = $now
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] ✅ Dashboard sincronizzata con successo." -ForegroundColor Green
+            Write-Host "--------------------------------------------------------"
+        }
+    }
+
+    # Registrazione Eventi
+    Register-ObjectEvent $watcher "Created" -Action $action -MessageData $SyncScript | Out-Null
+    Register-ObjectEvent $watcher "Changed" -Action $action -MessageData $SyncScript | Out-Null
+    Register-ObjectEvent $watcher "Deleted" -Action $action -MessageData $SyncScript | Out-Null
+    Register-ObjectEvent $watcher "Renamed" -Action $action -MessageData $SyncScript | Out-Null
+
+    Write-Host "✅ Monitoraggio avviato correttamente!" -ForegroundColor Green
+    Write-Host "Il sistema rileverà i tuoi cambiamenti automaticamente." -ForegroundColor Green
+    
+    while ($true) {
+        Start-Sleep -Seconds 1
+    }
+
+} catch {
+    Write-Host ""
+    Write-Host "❌ ERRORE CRITICO DURANTE IL MONITORAGGIO: $_" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Suggerimenti:"
+    Write-Host "1. Verifica di avere i permessi per questa cartella."
+    Write-Host "2. Prova a eseguire come amministratore se il problema persiste."
+    Write-Host ""
+    Write-Host "Premi un tasto per chiudere..." -ForegroundColor Gray
+    Read-Host
+} finally {
+    if ($watcher) {
+        $watcher.EnableRaisingEvents = $false
+        $watcher.Dispose()
+    }
+    Unregister-Event -SourceIdentifier * -ErrorAction SilentlyContinue
+}
