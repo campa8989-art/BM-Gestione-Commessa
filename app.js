@@ -186,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = document.body;
     const themeToggles = [
         document.getElementById('theme-toggle'), 
-        document.getElementById('force-update-btn'), // Aggiunto qui per gestione icone
         document.getElementById('theme-toggle-workspace'),
         document.getElementById('theme-toggle-map'),
         document.getElementById('theme-toggle-analytics')
@@ -196,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'light') {
             body.classList.add('light-theme');
-            themeToggles.forEach(t => { if(t && t.id !== 'force-update-btn') t.innerHTML = '<i class="fas fa-sun"></i>'; });
+            themeToggles.forEach(t => { if(t) t.innerHTML = '<i class="fas fa-sun"></i>'; });
         }
     }
 
@@ -207,17 +206,21 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             forceUpdateBtn.style.opacity = "0.5";
             forceUpdateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            forceUpdateBtn.classList.add('syncing');
             
             // Pulisce cache dati specifica
             localStorage.removeItem('bm_maintenance_data');
             localStorage.removeItem('bm_last_sync');
             
+            // Messaggio opzionale in console per debug
+            console.log("Cache pulita. Ricaricamento forzato in corso...");
+
             // Ricarica con cache buster
             setTimeout(() => {
                 const url = new URL(window.location.href);
                 url.searchParams.set('reload', Date.now());
                 window.location.href = url.href;
-            }, 500);
+            }, 800);
         });
     }
 
