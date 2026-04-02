@@ -7,12 +7,8 @@ $ErrorActionPreference = "Stop"
 
 try {
     # 1. Configurazione Percorsi
-    # Usiamo un metodo robusto per trovare la root del progetto
-    $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-    if ([string]::IsNullOrEmpty($ScriptDir)) { $ScriptDir = $PSScriptRoot }
-    
-    $RootPath = Get-Item (Join-Path $ScriptDir "..\..\..")
-    $SyncScript = Join-Path $ScriptDir "aggiorna_dati_archivio.ps1"
+    $RootPath = Get-Item $PSScriptRoot
+    $SyncScript = Join-Path $PSScriptRoot "aggiorna_dati_archivio.ps1"
     
     # Verifica esistenza file critici
     if (-not (Test-Path $SyncScript)) { throw "Impossibile trovare lo script di sincronizzazione: $SyncScript" }
@@ -22,8 +18,8 @@ try {
     Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
     Write-Host "Percorso monitorato: $($RootPath.FullName)"
     Write-Host ""
-    Write-Host "Ogni modifica verrà sincronizzata automaticamente."
-    Write-Host "Premi CTRL+C per fermare il monitoraggio."
+    Write-Host "Ogni modifica in '01-Operation' verrà sincronizzata."
+    Write-Host "Le modifiche a index.html e data.js vengono ignorate per evitare loop."
     Write-Host "--------------------------------------------------------"
     Write-Host ""
 
@@ -33,20 +29,28 @@ try {
     $watcher.IncludeSubdirectories = $true
     $watcher.EnableRaisingEvents = $true
 
-    # Filtro Broad (Tutto) e NotifyFilter per Cartelle
+    # Filtro Broad (Tutto) e NotifyFilter per Cartelle/File
     $watcher.Filter = "*"
-    $watcher.NotifyFilter = [System.IO.NotifyFilters]::DirectoryName -bor [System.IO.NotifyFilters]::FileName -bor [System.IO.NotifyFilters]::LastWrite -bor [System.IO.NotifyFilters]::Attributes
+    $watcher.NotifyFilter = [System.IO.NotifyFilters]::FileName -bor [System.IO.NotifyFilters]::DirectoryName -bor [System.IO.NotifyFilters]::LastWrite
 
     # Logica di Debounce
     $Global:lastRun = [DateTime]::MinValue
 
     $action = {
         $now = Get-Date
+        $changedFile = $EventArgs.Name
+        
+        # --- FIX: EVITA LOOP INFINITO ---
+        # Ignoriamo le modifiche ai file che lo script stesso aggiorna
+        if ($changedFile -match "index\.html|data\.js|intelligence_kb\.json") {
+            return 
+        }
+
         if ($now -gt $Global:lastRun.AddSeconds(3)) {
             $scriptToRun = $Event.MessageData
-            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] 🔄 Cambiamento rilevato! Aggiornamento in corso..." -ForegroundColor Yellow
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] 🔄 Cambiamento rilevato in: $changedFile" -ForegroundColor Yellow
             
-            # Eseguiamo il sync script principale
+            # Eseguiamo il sync script principale (Workspace + Dashboard Data)
             powershell.exe -ExecutionPolicy Bypass -NoProfile -File "$scriptToRun"
             
             $Global:lastRun = $now
