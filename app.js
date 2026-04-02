@@ -1364,12 +1364,12 @@ document.addEventListener('DOMContentLoaded', () => {
             let icon = '<i class="fas fa-folder"></i>';
             if (!item.isDir) {
                 const ext = item.name.toLowerCase();
-                if (ext.endsWith('.xlsx') || ext.endsWith('.xls')) { typeClass = 'file-excel'; icon = '📗'; }
-                else if (ext.endsWith('.pdf')) { typeClass = 'file-pdf'; icon = '📕'; }
-                else if (ext.endsWith('.docx') || ext.endsWith('.doc')) { typeClass = 'file-word'; icon = '📘'; }
-                else if (ext.endsWith('.zip') || ext.endsWith('.rar')) { typeClass = 'file-zip'; icon = '📦'; }
-                else if (ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.webp')) { typeClass = 'file-image'; icon = '🖼️'; }
-                else { typeClass = 'file-generic'; icon = '📄'; }
+                if (ext.endsWith('.xlsx') || ext.endsWith('.xls')) { typeClass = 'file-excel'; icon = '<i class="fas fa-file-excel"></i>'; }
+                else if (ext.endsWith('.pdf')) { typeClass = 'file-pdf'; icon = '<i class="fas fa-file-pdf"></i>'; }
+                else if (ext.endsWith('.docx') || ext.endsWith('.doc')) { typeClass = 'file-word'; icon = '<i class="fas fa-file-word"></i>'; }
+                else if (ext.endsWith('.zip') || ext.endsWith('.rar')) { typeClass = 'file-zip'; icon = '<i class="fas fa-file-archive"></i>'; }
+                else if (ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.webp')) { typeClass = 'file-image'; icon = '<i class="fas fa-file-image"></i>'; }
+                else { typeClass = 'file-generic'; icon = '<i class="fas fa-file-alt"></i>'; }
             }
 
             card.className = `workspace-item ${typeClass}`;
@@ -1380,12 +1380,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return window.location.protocol === 'file:' ? `../../../${internal}` : internal;
             };
 
-            // Calculate context for global search
-            let contextText = item.isDir ? '' : (Math.round(item.size / 1024) + ' KB');
+            // Calculate metadata
+            let metaText = item.isDir ? 'Cartella' : (Math.round(item.size / 1024) + ' KB');
 
             card.innerHTML = `
                 <div class="item-icon">${icon}</div>
-                <div class="item-name">${item.name} <span style="font-size: 11px; opacity: 0.6; font-weight: normal; margin-left: 8px;">${contextText}</span></div>
+                <div class="item-name">${item.name}</div>
+                <div class="item-meta">${metaText}</div>
             `;
 
             card.onclick = () => {
