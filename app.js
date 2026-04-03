@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Popolamento Siti e Statistiche Globali (Dinamico)
     const activeData = (typeof maintenanceData !== 'undefined') ? maintenanceData : (window.maintenanceData || []);
+    window.sites = sites; // Rende i siti accessibili all'IA
     
     activeData.forEach(row => {
         if (!sites[row.ID_Sito]) {
@@ -153,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const siteIds = Object.keys(sites).sort();
     let currentSiteId = siteIds[0];
+    window.currentSiteId = currentSiteId; // Inizializzazione globale per l'IA
     let currentFilter = 'all';
     let currentUrgencyFilter = 'all';
     let currentDocFilter = 'all';
@@ -303,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.onclick = (e) => {
                     e.preventDefault();
                     currentSiteId = id;
-                    window.currentSiteId = id;
+                    window.currentSiteId = id; // Aggiornamento globale per l'IA
                     document.querySelectorAll('.site-link').forEach(l => l.classList.remove('active'));
                     link.classList.add('active');
                     
@@ -1042,6 +1044,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('view-map').classList.toggle('active', viewName === 'map');
         document.getElementById('view-calendar').classList.toggle('active', viewName === 'calendar');
         document.getElementById('view-analytics').classList.toggle('active', viewName === 'analytics');
+        document.getElementById('view-ai').classList.toggle('active', viewName === 'ai');
 
         const siteNavSection = document.querySelector('.nav-section:last-child');
         const siteSearch = document.querySelector('.sidebar-search');
@@ -1066,6 +1069,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (siteNavSection) siteNavSection.style.display = 'block';
             if (siteSearch) siteSearch.style.display = 'block';
             renderGlobalAnalytics();
+        } else if (viewName === 'ai') {
+            if (siteNavSection) siteNavSection.style.display = 'block';
+            if (siteSearch) siteSearch.style.display = 'block';
+            // L'audit verrà attivato manualmente o all'ingresso se desiderato
         } else {
             if (siteNavSection) siteNavSection.style.display = 'block';
             if (siteSearch) siteSearch.style.display = 'block';
@@ -1564,6 +1571,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- AI View Listeners ---
+    const btnStartAudit = document.getElementById('btn-start-audit');
+    if (btnStartAudit) {
+        btnStartAudit.onclick = () => {
+            if (typeof window.runAIAudit === 'function') {
+                window.runAIAudit();
+            } else {
+                alert("Motore AI in fase di inizializzazione... Riprova tra un istante.");
+            }
+        };
+    }
+
+    const expandedInput = document.getElementById('ai-expanded-input');
+    const btnSendExpanded = document.getElementById('send-ai-expanded');
+    if (btnSendExpanded && expandedInput) {
+        const sendMsg = () => {
+            const text = expandedInput.value.trim();
+            if (text && typeof window.sendAIExpanded === 'function') {
+                window.sendAIExpanded(text);
+                expandedInput.value = '';
+            }
+        };
+        btnSendExpanded.onclick = sendMsg;
+        expandedInput.onkeypress = (e) => { if (e.key === 'Enter') sendMsg(); };
+    }
+
     function closeTaskDrawer() {
         drawerOverlay.classList.remove('active');
         taskDrawer.classList.remove('active');
@@ -1714,8 +1747,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Global helper for marker popup clicks
     window.appSelectSite = (id) => {
         currentSiteId = id;
+        window.currentSiteId = id; // Update global for AI
         switchView('dashboard');
         renderCurrentSite();
+
+        // Reset AI Audit view for the new site
+        if (typeof window.resetAIAudit === 'function') {
+            window.resetAIAudit();
+        }
+
         // Update link in sidebar
         document.querySelectorAll('.site-link').forEach(l => {
             l.classList.toggle('active', l.innerText.includes(id));
