@@ -160,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentDocFilter = 'all';
     let currentView = 'dashboard';
     let currentSubview = 'profile';
+    let currentLayout = 'grid';
     
     
     // Calendar State (Punto 3)
@@ -361,6 +362,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isOk = hasActualDocument(t);
                 return currentDocFilter === 'ok' ? isOk : !isOk;
             });
+        }
+
+        // Apply Layout Class
+        if (activityGridEl) {
+            activityGridEl.className = `activity-grid ${currentLayout === 'list' ? 'list-view' : ''}`;
         }
 
         updateHeaderStats(filteredTasks);
@@ -1098,6 +1104,12 @@ document.addEventListener('DOMContentLoaded', () => {
             profileEl.classList.toggle('active', subviewName === 'profile');
         }
 
+        // Toggle layout selector visibility
+        const layoutToggles = document.getElementById('detail-layout-toggles');
+        if (layoutToggles) {
+            layoutToggles.style.display = subviewName === 'detail' ? 'flex' : 'none';
+        }
+
         renderCurrentSite();
     }
 
@@ -1355,6 +1367,13 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredItems = Array.isArray(rawChildren) ? rawChildren : [rawChildren];
         }
 
+        // Ordinamento: cartelle prima dei file
+        filteredItems.sort((a, b) => {
+            if (a.isDir && !b.isDir) return -1;
+            if (!a.isDir && b.isDir) return 1;
+            return a.name.localeCompare(b.name);
+        });
+
         if (filteredItems.length === 0 && workspaceSearchQuery) {
             grid.innerHTML = `<div style="grid-column: 1/-1; color: var(--text-muted); padding: 60px; text-align: center;">
                 <span style="font-size: 40px; display: block; margin-bottom: 20px;"><i class="fas fa-search"></i></span>
@@ -1462,13 +1481,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderDrawerRelatedDocs(task) {
         const container = document.getElementById('drawer-related-docs');
         if (!container) return;
+        container.innerHTML = ''; // Reset preventivo
 
         const system = task.Sistema;
-        const keywords = SYSTEM_KEYWORDS[system] || [system];
-        const query = Array.isArray(keywords) ? keywords[0].toLowerCase() : keywords.toLowerCase();
-        const siteId = task.ID_Sito;
+        const systemKeywords = SYSTEM_KEYWORDS[system] || [system];
+        const siteId = currentSiteId;
+        const site = sites[siteId];
+        const siteName = site ? site.nome : "";
+        
+        // Estrazione termini chiave dal nome del sito (es. "FBF" o "Sacco")
+        const siteKeywords = siteName
+            .replace(/Via|V\.le|Piazza|Viale|viale|[0-9/]+/gi, '')
+            .trim()
+            .toLowerCase()
+            .split(/\s+/)
+            .filter(w => w.length >= 3);
 
-        // Recursive search for files matching the system and site
         const results = [];
         function search(dir) {
             if (dir && dir.children) {
@@ -1478,8 +1506,35 @@ document.addEventListener('DOMContentLoaded', () => {
                         search(child);
                     } else if (child.name) {
                         const nameLower = child.name.toLowerCase();
-                        if (nameLower.includes(query)) {
-                            results.push(child);
+                        const pathLower = (child.path || child.name).toLowerCase();
+                        
+                        let score = 0;
+                        let hasSiteMatch = false;
+
+                        // 1. Match ID Sito (Molto Importante)
+                        if (nameLower.includes(siteId.toLowerCase()) || pathLower.includes(siteId.toLowerCase())) {
+                            score += 15;
+                            hasSiteMatch = true;
+                        }
+
+                        // 2. Match Parole Chiave Nome Sito
+                        siteKeywords.forEach(kw => {
+                            if (nameLower.includes(kw) || pathLower.includes(kw)) {
+                                score += 8;
+                                hasSiteMatch = true;
+                            }
+                        });
+
+                        // 3. Match Terminologia Sistema
+                        systemKeywords.forEach(kw => {
+                            if (nameLower.includes(kw.toLowerCase()) || pathLower.includes(kw.toLowerCase())) {
+                                score += 5;
+                            }
+                        });
+
+                        // Filtro Hard: Se non c'è match col sito o nessuna rilevanza tecnica, scarta
+                        if (hasSiteMatch && score >= 8) {
+                            results.push({ ...child, score });
                         }
                     }
                 });
@@ -1487,29 +1542,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         search({ name: 'Root', children: workspaceData });
 
+        // Ordinamento per pertinenza (score più alto)
+        results.sort((a, b) => b.score - a.score);
+
         if (results.length === 0) {
-            container.innerHTML = `<p class="drawer-text" style="font-size: 13px; opacity: 0.6;">Nessun documento trovato per "${task.Sistema}".</p>`;
+            container.innerHTML = `<p class="drawer-text" style="font-size: 13px; opacity: 0.6;">Nessun documento trovato per "${task.Sistema}" inerente a questo sito.</p>`;
         } else {
-            // Take top 3 relevant docs
-            results.slice(0, 3).forEach(doc => {
+            // Mostra i top 5 risultati più pertinenti
+            results.slice(0, 5).forEach(doc => {
                 const item = document.createElement('a');
                 item.href = '#';
                 item.className = 'drawer-doc-item';
+                item.style.display = 'flex';
+                item.style.alignItems = 'center';
+                item.style.gap = '12px';
+                item.style.padding = '10px';
+                item.style.borderRadius = '8px';
+                item.style.marginBottom = '6px';
+                item.style.transition = 'background 0.2s';
+                
+                // Determinazione estensione/icona
+                let iconClass = 'fa-file-lines';
+                if (doc.name.toLowerCase().endsWith('.pdf')) iconClass = 'fa-file-pdf';
+                if (doc.name.toLowerCase().endsWith('.xlsx') || doc.name.toLowerCase().endsWith('.xls')) iconClass = 'fa-file-excel';
+
                 item.innerHTML = `
-                    <span class="drawer-doc-icon"><i class="fas fa-file-lines"></i></span>
-                    <span class="drawer-doc-name">${doc.name}</span>
+                    <span class="drawer-doc-icon" style="color: var(--primary);"><i class="fas ${iconClass}"></i></span>
+                    <div style="display: flex; flex-direction: column; overflow: hidden;">
+                        <span class="drawer-doc-name" style="font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${doc.name}</span>
+                        <span style="font-size: 9px; opacity: 0.5;">Pertinenza: ${doc.score} | Cartella: ${doc.path.split(/\\|\//).slice(-2, -1)}</span>
+                    </div>
                 `;
+                
                 item.onclick = (e) => {
                     e.preventDefault();
-                    switchView('workspace');
-                    // We could also navigate directly to the file, but for now we search it
-                    const searchInput = document.getElementById('workspace-search');
-                    if (searchInput) {
-                        searchInput.value = doc.name;
-                        workspaceSearchQuery = doc.name;
-                        renderWorkspace();
-                    }
-                    closeTaskDrawer();
+                    // Determina il percorso corretto per l'apertura
+                    const internal = doc.path.replace(/\\/g, '/');
+                    const finalPath = window.location.protocol === 'file:' ? `../../../${internal}` : internal;
+                    window.open(finalPath, '_blank');
                 };
                 container.appendChild(item);
             });
@@ -1795,6 +1865,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.toggle-btn').forEach(btn => {
         btn.onclick = () => switchSubview(btn.dataset.subview);
+    });
+
+    // Layout Toggle Listeners
+    document.querySelectorAll('.layout-btn').forEach(btn => {
+        btn.onclick = () => {
+            currentLayout = btn.dataset.layout;
+            document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMaintenanceTable();
+        };
     });
 
     if (menuToggle) {

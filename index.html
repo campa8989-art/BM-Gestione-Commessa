@@ -119,6 +119,12 @@
                                 <button class="toggle-btn" data-subview="detail">Dettaglio</button>
                                 <button class="toggle-btn" data-subview="monthly">Programma 2026</button>
                             </div>
+
+                            <div class="layout-toggles" id="detail-layout-toggles" style="display: none; background: rgba(255, 255, 255, 0.05); padding: 4px; border-radius: 12px; border: 1px solid var(--border);">
+                                <button class="layout-btn active" data-layout="grid" title="Vista Griglia" style="padding: 8px 12px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-th-large"></i></button>
+                                <button class="layout-btn" data-layout="list" title="Vista Lista" style="padding: 8px 12px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-list"></i></button>
+                            </div>
+
                             <div class="export-group">
                                 <button id="btn-export-excel" class="export-btn excel" title="Esporta in Excel"><i
                                         class="fas fa-file-excel"></i> Excel</button>
@@ -312,14 +318,18 @@
             <div id="view-workspace" class="view">
                 <div class="view-container">
                     <div class="workspace-header">
-                        <div class="workspace-breadcrumb" id="workspace-breadcrumb"></div>
-                        <div class="workspace-search-container">
-                            <input type="text" id="workspace-search" placeholder="Cerca documenti tecnici...">
+                        <div class="workspace-breadcrumb-wrapper">
+                            <div class="workspace-breadcrumb" id="workspace-breadcrumb"></div>
                         </div>
-                        <div class="workspace-actions">
-                            <button id="btn-workspace-back" class="nav-btn"><i class="fas fa-chevron-left"></i></button>
-                            <button id="btn-workspace-forward" class="nav-btn"><i
-                                    class="fas fa-chevron-right"></i></button>
+                        <div class="workspace-controls-bar">
+                            <div class="workspace-nav-btns">
+                                <button id="btn-workspace-back" class="nav-btn" title="Indietro"><i class="fas fa-chevron-left"></i></button>
+                                <button id="btn-workspace-forward" class="nav-btn" title="Avanti"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <div class="workspace-search-wrapper">
+                                <i class="fas fa-search search-icon-inner"></i>
+                                <input type="text" id="workspace-search" placeholder="Cerca documenti tecnici nel presidio...">
+                            </div>
                         </div>
                     </div>
 
@@ -16225,7 +16235,7 @@
     {
         "path":  "app.js",
         "isDir":  false,
-        "size":  82913,
+        "size":  86716,
         "name":  "app.js",
         "ext":  ".js"
     },
@@ -16253,7 +16263,7 @@
     {
         "path":  "index.html",
         "isDir":  false,
-        "size":  2026113,
+        "size":  2027430,
         "name":  "index.html",
         "ext":  ".html"
     },
@@ -16295,7 +16305,7 @@
     {
         "path":  "style.css",
         "isDir":  false,
-        "size":  47051,
+        "size":  49620,
         "name":  "style.css",
         "ext":  ".css"
     },
@@ -16314,7 +16324,7 @@
         "ext":  ".js"
     }
 ];
-        const workspaceVersion = '03/04/2026 02:45:45';
+        const workspaceVersion = '04/04/2026 01:34:58';
         /* WORKSPACE_DATA_END */
     </script>
     <script src="data.js"></script>
