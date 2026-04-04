@@ -145,21 +145,45 @@ h1, h2, h3, .logo-text {
 .logo {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
 }
 
 .logo-icon {
-    font-size: 28px;
-    filter: drop-shadow(0 0 8px var(--primary-glow));
+    font-size: 32px;
+    filter: drop-shadow(0 0 12px var(--primary-glow));
+    color: var(--primary);
+}
+
+.logo-text-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.1;
 }
 
 .logo-text {
-    font-size: 22px;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: 19px;
+    letter-spacing: -0.2px;
+    font-weight: 500;
+    color: var(--text-main);
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.logo-accent {
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.logo-subtitle {
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+    opacity: 0.6;
 }
 
 .sidebar-search {
