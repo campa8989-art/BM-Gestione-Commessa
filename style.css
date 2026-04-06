@@ -145,8 +145,30 @@ h1, h2, h3, .logo-text {
 .logo {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
+    width: 100%;
 }
+
+.brand-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    filter: brightness(1.2);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.brand-logo:hover {
+    transform: scale(1.05);
+    filter: brightness(1.4);
+}
+
+
+.brand-logo:hover {
+    transform: scale(1.05);
+    filter: brightness(1.4);
+}
+
 
 .logo-icon {
     font-size: 32px;
