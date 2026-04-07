@@ -1,20 +1,16 @@
-# SINC_TOTALE.ps1 - Sincronizzazione Completa (Locale + GitHub)
-# Esegui questo script per aggiornare TUTTO con un solo click.
+# SINC_TOTALE.ps1 - Sincronizzazione Completa (Dati + Web)
+# Esegui questo script per un aggiornamento totale di scadenze, conformità e file.
 
 $ErrorActionPreference = "Continue"
 $ScriptsDir = Join-Path $PSScriptRoot "01-Operation\02_Scripts_System"
 
 Write-Host "----------------------------------------------------" -ForegroundColor Cyan
-Write-Host "    AVVIO SINCRONIZZAZIONE TOTALE (PULIZIA INC)...  " -ForegroundColor Cyan
+Write-Host "    💎 SINC_TOTALE: AGGIORNAMENTO SISTEMA COMPLETO  " -ForegroundColor Cyan
 Write-Host "----------------------------------------------------" -ForegroundColor Cyan
 
-# 0. FASE PRELIMINARE: MIRROR ARCHIVIO -> WORKSPACE
-Write-Host "[0/4] Sincronizzazione fisica dall'Archivio Master..." -ForegroundColor Yellow
-powershell -ExecutionPolicy Bypass -File .\sync_archive_to_workspace.ps1
-
-# 1. Aggiorna l'elenco dei file (Workspace)
-Write-Host "[1/4] Scansione dei file OneDrive (Workspace)..." -ForegroundColor Yellow
-powershell -ExecutionPolicy Bypass -File .\aggiorna_dati_archivio.ps1
+# 1. Esegue la Sincronizzazione Online (File + Git)
+Write-Host "[1/3] Sincronizzazione file e preparazione web..." -ForegroundColor Yellow
+powershell -ExecutionPolicy Bypass -File .\SINC_ONLINE.ps1
 
 # 2. Aggiorna i dati della Dashboard dai file CSV Excel
 if (Test-Path (Join-Path $ScriptsDir "sync_data.ps1")) {
@@ -26,8 +22,8 @@ if (Test-Path (Join-Path $ScriptsDir "sync_data.ps1")) {
     Write-Warning "AVVISO: Script sync_data.ps1 non trovato in $ScriptsDir"
 }
 
-# 3. Invia tutto a GitHub (Inclusa l'anteprima online)
-Write-Host "[3/3] Invio a GitHub in corso..." -ForegroundColor Yellow
+# 3. Invia nuovamente a GitHub per includere le nuove statistiche
+Write-Host "[3/3] Sincronizzazione finale dati calcolati su GitHub..." -ForegroundColor Yellow
 powershell -ExecutionPolicy Bypass -File .\aggiorna_dashboard_online.ps1
 
 Write-Host ""
@@ -36,4 +32,3 @@ Write-Host "         TUTTO AGGIORNATO CON SUCCESSO!            " -ForegroundColo
 Write-Host "----------------------------------------------------" -ForegroundColor Green
 Write-Host "Il sito sara' visibile online tra 60 secondi."
 Write-Host ""
-pause
