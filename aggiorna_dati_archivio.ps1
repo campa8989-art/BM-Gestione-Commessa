@@ -13,7 +13,7 @@ $now = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
 Write-Host ""
 Write-Host "----------------------------------------------------" -ForegroundColor Cyan
 Write-Host "    SCANSIONE CARTELLE ONEDRIVE IN CORSO...         " -ForegroundColor Cyan
-Write-Host "    Percorso: $($RootFolderPath.FullName)"
+Write-Host "    Percorso: $($LocalRoot.FullName)"
 Write-Host "    Data/Ora: $now"
 Write-Host "----------------------------------------------------" -ForegroundColor Cyan
 Write-Host ""

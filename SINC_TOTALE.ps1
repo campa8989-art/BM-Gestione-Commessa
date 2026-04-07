@@ -8,14 +8,12 @@ Write-Host "----------------------------------------------------" -ForegroundCol
 Write-Host "    AVVIO SINCRONIZZAZIONE TOTALE (PULIZIA INC)...  " -ForegroundColor Cyan
 Write-Host "----------------------------------------------------" -ForegroundColor Cyan
 
-# 0. FASE PRELIMINARE: PULIZIA TEMP
-Write-Host "[0/3] Pulizia file temporanei..." -ForegroundColor Yellow
-
-# Pulisce cartelle tmp
-Remove-Item -Path ".\01-Operation\tmp\*" -Recurse -Force -ErrorAction SilentlyContinue
+# 0. FASE PRELIMINARE: MIRROR ARCHIVIO -> WORKSPACE
+Write-Host "[0/4] Sincronizzazione fisica dall'Archivio Master..." -ForegroundColor Yellow
+powershell -ExecutionPolicy Bypass -File .\sync_archive_to_workspace.ps1
 
 # 1. Aggiorna l'elenco dei file (Workspace)
-Write-Host "[1/3] Scansione dei file OneDrive (Workspace)..." -ForegroundColor Yellow
+Write-Host "[1/4] Scansione dei file OneDrive (Workspace)..." -ForegroundColor Yellow
 powershell -ExecutionPolicy Bypass -File .\aggiorna_dati_archivio.ps1
 
 # 2. Aggiorna i dati della Dashboard dai file CSV Excel
